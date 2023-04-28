@@ -4,38 +4,7 @@ import time
 import numpy as np
 
 from game_server_client import GameServerClient
-from util import load_q_table_state
-
-
-def is_valid_position(x, y) -> bool:
-    return 0 <= x < 40 and 0 <= y < 40
-
-
-def map_action_to_direction(action):
-    if action == 0:
-        return "N"
-    if action == 1:
-        return "E"
-    if action == 2:
-        return "S"
-    return "W"
-
-
-def map_direction_to_action(direction):
-    if direction == "N":
-        return 0
-    if direction == "E":
-        return 1
-    if direction == "S":
-        return 2
-    return 3
-
-
-directions = {"N": (1, 0), "E": (0, 1), "S": (-1, 0), "W": (0, -1)}
-
-
-def get_valid_moves_from(x, y):
-    return [k for k, v in directions.items() if is_valid_position(x + v[0], y + v[1])]
+from util import load_q_table_state, get_valid_moves_from, map_direction_to_action, map_action_to_direction
 
 
 class QLearning:
