@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-COL = 10
-ROW = 10
+COL = 4
+ROW = 4
 
 directions = {"N": (0, 1), "E": (1, 0), "S": (0, -1), "W": (-1, 0)}  # (x, y) pair
 
@@ -66,8 +66,8 @@ def get_valid_moves_from(x, y):
     return [k for k, v in directions.items() if is_valid_position(x + v[0], y + v[1])]
 
 
-def visualize_the_world():
-    q_tab = load_q_table_state(34)
+def visualize_the_world(world_id):
+    q_tab = load_q_table_state(world_id)
 
     grid = np.argmax(q_tab, axis=2)
     row = grid.shape[1]
@@ -76,14 +76,11 @@ def visualize_the_world():
 
     plt.figure(figsize=(6, 6), dpi=100)
 
-    for i in range(grid.shape[0]):
-        for j in range(grid.shape[1]):
-            plt.text(j, i, map_action_to_arrows_local(grid[i, j]),
+    for x in range(grid.shape[0]):
+        for y in range(grid.shape[1]):
+            plt.text(x, y, map_action_to_arrows(grid[y, x]),
                      ha='center', va='center', color='red')
 
     plt.imshow(zeros, cmap='Greys', interpolation='nearest')
     plt.gca().invert_yaxis()
     plt.show()
-
-
-visualize_the_world()

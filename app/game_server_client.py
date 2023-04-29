@@ -1,5 +1,3 @@
-import json
-
 import numpy as np
 import requests
 from requests.adapters import HTTPAdapter, Retry
@@ -25,15 +23,16 @@ class GameServerClient:
         # data for mocking
         self.is_mocked = is_mocked
         self.mock_state = np.zeros((ROW, COL))
-        self.mock_state[9, 9] = +1
-        self.mock_state[5, 5] = -1
-        self.mock_state[6, 6] = -1
+        self.mock_state[3, 3] = +100
+        self.mock_state[1, 1] = -100
+        self.mock_state[1, 2] = -100
+        self.mock_state[2, 1] = -100
+        self.mock_state[2, 2] = -100
         self.current_location = (0, 0)
 
     def make_move(self, world_id, direction):
         if self.is_mocked:
             next_action = get_next_action_by_prob(direction)
-            #print(next_action)
             new_x = self.current_location[0] + directions[next_action][0]
             new_y = self.current_location[1] + directions[next_action][1]
             if not is_valid_position(new_x, new_y):
@@ -42,14 +41,14 @@ class GameServerClient:
             resp = {
                 "code": "OK",
                 "worldId": world_id,
-                "reward": self.mock_state[new_x, new_y],
+                "reward": self.mock_state[new_y, new_x],
                 "newState": {
                     "x": new_x,
                     "y": new_y,
                 }
             }
             self.current_location = (new_x, new_y)
-            if self.mock_state[new_x, new_y] != 0:
+            if self.mock_state[new_y, new_x] != 0:
                 self.current_location = (0, 0)
             return resp
 
