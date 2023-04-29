@@ -25,12 +25,15 @@ class GameServerClient:
         # data for mocking
         self.is_mocked = is_mocked
         self.mock_state = np.zeros((ROW, COL))
+        self.mock_state[9, 9] = +1
+        self.mock_state[5, 5] = -1
+        self.mock_state[6, 6] = -1
         self.current_location = (0, 0)
 
     def make_move(self, world_id, direction):
         if self.is_mocked:
             next_action = get_next_action_by_prob(direction)
-            print(next_action)
+            #print(next_action)
             new_x = self.current_location[0] + directions[next_action][0]
             new_y = self.current_location[1] + directions[next_action][1]
             if not is_valid_position(new_x, new_y):
@@ -46,7 +49,9 @@ class GameServerClient:
                 }
             }
             self.current_location = (new_x, new_y)
-            return json.dumps(resp)
+            if self.mock_state[new_x, new_y] != 0:
+                self.current_location = (0, 0)
+            return resp
 
         url = self.base_url + "/gw.php"
         data = {
@@ -67,7 +72,7 @@ class GameServerClient:
                 "runId": 0,
                 "state": "0:0"
             }
-            return json.dumps(resp)
+            return resp
 
         url = self.base_url + "/gw.php"
         data = {
@@ -86,7 +91,7 @@ class GameServerClient:
                 "world": "0",
                 "state": str(self.current_location[0]) + ":" + str(self.current_location[1])
             }
-            return json.dumps(resp)
+            return resp
 
         url = self.base_url + "/gw.php?type=location" + "&teamId=" + self.team_id
         response = self.session.get(url)

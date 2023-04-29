@@ -37,7 +37,6 @@ class QLearning:
         if enter_world_req['code'] != 'OK' and 'currently in world' in enter_world_req['message']:
             loc_req = self.game_client.where_am_i()
             x, y = map(int, loc_req['state'].split(":"))
-            print(x, y)
         else:
             x, y = map(int, enter_world_req['state'].split(":"))
 
@@ -51,6 +50,7 @@ class QLearning:
             reward = move_req["reward"]
             action = map_direction_to_action(direction)
             self.update_q_table(x, y, new_x, new_y, action, reward)
-            print(x, y, new_x, new_y, reward)
+            if reward != 0:
+                break
             x, y = new_x, new_y
-            time.sleep(1)
+            #time.sleep(0.2)
