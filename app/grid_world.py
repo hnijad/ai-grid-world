@@ -4,7 +4,7 @@ import time
 import numpy as np
 
 from game_server_client import GameServerClient
-from util import load_q_table_state, get_valid_moves_from, map_direction_to_action, map_action_to_direction
+from util import load_q_table_state, get_valid_moves_from, map_direction_to_action, map_action_to_direction, COL, ROW
 
 
 class QLearning:
@@ -17,15 +17,21 @@ class QLearning:
         self.world_id = world_id
 
     def update_q_table(self, x, y, x_p, y_p, action, reward):
-        self.q_table[x][y][action] = (1 - self.alpha) * self.q_table[x][y][action] + \
-                                     self.alpha * (reward + self.gamma * np.max(self.q_table[x_p][y_p]))
+        self.q_table[y][x][action] = (1 - self.alpha) * self.q_table[y][x][action] + \
+                                     self.alpha * (reward + self.gamma * np.max(self.q_table[y_p][x_p]))
+
+    def print_q_table(self):
+        for x in range(ROW):
+            for y in range(COL):
+                print(str(x) + "," + str(y), " : ", map_action_to_direction(np.argmax(self.q_table[y, x])),
+                      np.max(self.q_table[y, x]))
 
     def chose_an_action(self, x, y):
         valid_moves = get_valid_moves_from(x, y)
         if np.random.uniform() < self.epsilon:
             return random.choice(valid_moves)
         actions = [map_direction_to_action(val) for val in valid_moves]
-        q_values = self.q_table[x][y][actions]
+        q_values = self.q_table[y][x][actions]
         action = actions[np.argmax(q_values)]
         return map_action_to_direction(action)
 
@@ -53,4 +59,4 @@ class QLearning:
             if reward != 0:
                 break
             x, y = new_x, new_y
-            #time.sleep(0.2)
+            # time.sleep(0.2)
