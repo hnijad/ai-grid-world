@@ -78,8 +78,9 @@ def visualize_the_world(world_id):
 
     for x in range(grid.shape[0]):
         for y in range(grid.shape[1]):
-            plt.text(x, y, map_action_to_arrows(grid[y, x]),
-                     ha='center', va='center', color='red')
+            if q_tab[y, x, grid[y, x]] != 0:
+                plt.text(x, y, map_action_to_arrows(grid[y, x]),
+                         ha='center', va='center', color='red')
 
     plt.imshow(zeros, cmap='Greys', interpolation='nearest')
     plt.gca().invert_yaxis()

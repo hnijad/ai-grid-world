@@ -15,10 +15,15 @@ class QLearning:
         self.q_table = load_q_table_state(world_id)
         self.game_client = game_client
         self.world_id = world_id
+        self.history = []
 
     def update_q_table(self, x, y, x_p, y_p, action, reward):
         self.q_table[y][x][action] = (1 - self.alpha) * self.q_table[y][x][action] + \
                                      self.alpha * (reward + self.gamma * np.max(self.q_table[y_p][x_p]))
+
+    def update_q_table_with_back_propagation(self):
+        for s in reversed(self.history):
+            self.update_q_table(s[0], s[1], s[2], s[3], s[4], s[5])
 
     def print_q_table(self):
         for x in range(ROW):
@@ -55,8 +60,11 @@ class QLearning:
             new_x, new_y = int(move_req["newState"]["x"]), int(move_req["newState"]["y"])
             reward = move_req["reward"]
             action = map_direction_to_action(direction)
-            self.update_q_table(x, y, new_x, new_y, action, reward)
+            self.history.append((x, y, new_x, new_y, action, reward))
+            # self.update_q_table(x, y, new_x, new_y, action, reward)
             if reward != 0:
+                self.update_q_table_with_back_propagation()
+                self.history.clear()
                 break
             x, y = new_x, new_y
             # time.sleep(0.2)

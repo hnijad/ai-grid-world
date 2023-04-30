@@ -24,10 +24,7 @@ class GameServerClient:
         self.is_mocked = is_mocked
         self.mock_state = np.zeros((ROW, COL))
         self.mock_state[3, 3] = +100
-        self.mock_state[1, 1] = -100
-        self.mock_state[1, 2] = -100
-        self.mock_state[2, 1] = -100
-        self.mock_state[2, 2] = -100
+        self.mock_state[2, 3] = -100
         self.current_location = (0, 0)
 
     def make_move(self, world_id, direction):
