@@ -12,10 +12,8 @@ if __name__ == '__main__':
     world_id = get_general_config('world_id')
     gsc = GameServerClient(user_id, api_key, team_id, is_mocked=True)
 
-    qlearning = QLearning(gsc, world_id, alpha=0.2, gamma=0.9, epsilon=0.2)
-    qlearning.print_q_table()
+    qlearning = QLearning(gsc, world_id, alpha=0.6, gamma=0.9, epsilon=0.2)
 
     atexit.register(save_q_table_state, world_id, qlearning.q_table)
 
-    for i in range(100000):
-        qlearning.start_learning()
+    qlearning.start_learning()
