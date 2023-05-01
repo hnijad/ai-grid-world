@@ -22,6 +22,7 @@ class QLearning:
                                      self.alpha * (reward + self.gamma * np.max(self.q_table[y_p][x_p]))
 
     def update_q_table_with_back_propagation(self):
+        print("Updating q table")
         for s in reversed(self.history):
             self.update_q_table(s[0], s[1], s[2], s[3], s[4], s[5])
 
@@ -52,19 +53,24 @@ class QLearning:
             x, y = map(int, enter_world_req['state'].split(":"))
 
         while True:
-            direction = self.chose_an_action(x, y)
-            move_req = self.game_client.make_move(self.world_id, direction)
-            if move_req['code'] != 'OK':
-                print("Could not make a move ", move_req['code'])
-                continue
-            new_x, new_y = int(move_req["newState"]["x"]), int(move_req["newState"]["y"])
-            reward = move_req["reward"]
-            action = map_direction_to_action(direction)
-            self.history.append((x, y, new_x, new_y, action, reward))
-            # self.update_q_table(x, y, new_x, new_y, action, reward)
-            if reward != 0:
-                self.update_q_table_with_back_propagation()
-                self.history.clear()
-                break
-            x, y = new_x, new_y
-            # time.sleep(0.2)
+            try:
+                direction = self.chose_an_action(x, y)
+                move_req = self.game_client.make_move(self.world_id, direction)
+                if move_req['code'] != 'OK':
+                    print("Could not make a move ", move_req['code'])
+                    continue
+                if move_req["newState"] is not None:
+                    new_x, new_y = int(move_req["newState"]["x"]), int(move_req["newState"]["y"])
+                    reward = move_req["reward"]
+                    action = map_direction_to_action(direction)
+                    self.history.append((x, y, new_x, new_y, action, reward))
+                    # self.update_q_table(x, y, new_x, new_y, action, reward)
+                    x, y = new_x, new_y
+                    time.sleep(2)
+                else:
+                    self.update_q_table_with_back_propagation()
+                    self.history.clear()
+                    break
+            except Exception as e:
+                print("Exception while requesting client ", e)
+
