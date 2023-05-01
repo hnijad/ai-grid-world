@@ -60,6 +60,8 @@ class QLearning:
                     print("Could not make a move ", move_req['code'])
                     continue
                 reward = move_req["reward"]
+                if abs(reward) < 2:
+                    reward = 0
                 action = map_direction_to_action(direction)
                 if move_req["newState"] is not None:
                     new_x, new_y = int(move_req["newState"]["x"]), int(move_req["newState"]["y"])
@@ -67,7 +69,7 @@ class QLearning:
                     # self.update_q_table(x, y, new_x, new_y, action, reward)
                     x, y = new_x, new_y
                     print(new_x, new_y)
-                    #time.sleep(0.5)
+                    time.sleep(1)
                 else:
                     self.q_table[y, x, action] = reward
                     self.update_q_table_with_back_propagation()
