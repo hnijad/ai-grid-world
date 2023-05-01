@@ -59,16 +59,19 @@ class QLearning:
                 if move_req['code'] != 'OK':
                     print("Could not make a move ", move_req['code'])
                     continue
+                reward = move_req["reward"]
+                action = map_direction_to_action(direction)
                 if move_req["newState"] is not None:
                     new_x, new_y = int(move_req["newState"]["x"]), int(move_req["newState"]["y"])
-                    reward = move_req["reward"]
-                    action = map_direction_to_action(direction)
                     self.history.append((x, y, new_x, new_y, action, reward))
                     # self.update_q_table(x, y, new_x, new_y, action, reward)
                     x, y = new_x, new_y
-                    time.sleep(2)
+                    print(new_x, new_y)
+                    #time.sleep(0.5)
                 else:
+                    self.q_table[y, x, action] = reward
                     self.update_q_table_with_back_propagation()
+                    print(self.history[-1])
                     self.history.clear()
                     break
             except Exception as e:
