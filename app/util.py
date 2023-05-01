@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-COL = 4
-ROW = 4
+COL = 40
+ROW = 40
 
 directions = {"N": (0, 1), "E": (1, 0), "S": (0, -1), "W": (-1, 0)}  # (x, y) pair
 
