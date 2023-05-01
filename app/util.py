@@ -15,6 +15,7 @@ def load_q_table_state(world_id):
     try:
         return np.load(f"states/world-{world_id}.npy")
     except FileNotFoundError as e:
+        print("Could not find the file")
         return np.zeros((ROW, COL, 4))
 
 
