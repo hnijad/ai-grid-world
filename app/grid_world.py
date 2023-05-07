@@ -4,7 +4,9 @@ import time
 import numpy as np
 
 from game_server_client import GameServerClient
-from util import load_q_table_state, get_valid_moves_from, map_direction_to_action, map_action_to_direction, COL, ROW
+from util import load_q_table_state, map_direction_to_action, map_action_to_direction, COL, ROW, \
+    directions, is_valid_position, get_valid_moves_from, load_reward_cell, load_visited_cells, load_mines, \
+    save_mines, save_visited_cells
 
 
 class QLearning:
@@ -16,6 +18,11 @@ class QLearning:
         self.game_client = game_client
         self.world_id = world_id
         self.history = []
+        self.reward_cell = load_reward_cell(world_id)
+        self.mines = load_mines(world_id)
+        self.is_visited = load_visited_cells(world_id)
+        self.x_lim = self.reward_cell[0]
+        self.y_lim = self.reward_cell[1]
 
     def update_q_table(self, x, y, x_p, y_p, action, reward):
         self.q_table[y][x][action] = (1 - self.alpha) * self.q_table[y][x][action] + \
@@ -33,9 +40,20 @@ class QLearning:
                       np.max(self.q_table[y, x]))
 
     def chose_an_action(self, x, y):
-        valid_moves = get_valid_moves_from(x, y)
+        valid_moves = get_valid_moves_from(x, y, min(self.x_lim + 1, COL), min(self.y_lim + 1, ROW))
         if np.random.uniform() < self.epsilon:
-            return random.choice(valid_moves)
+            random.shuffle(valid_moves)
+            for move in valid_moves:
+                if not self.is_visited[x + directions[move][0]][y + directions[move][1]]:
+                    print("unvisited cell selected", x + directions[move][0], y + directions[move][1])
+                    print("val = ", self.is_visited[x + directions[move][0]][y + directions[move][1]])
+                    return move
+            for move in valid_moves:
+                if not self.mines[x + directions[move][0]][y + directions[move][1]]:
+                    return move
+                else:
+                    print("Mine in cell", x + directions[move][0], y + directions[move][1])
+            return valid_moves[0]
         actions = [map_direction_to_action(val) for val in valid_moves]
         q_values = self.q_table[y][x][actions]
         action = actions[np.argmax(q_values)]
@@ -47,13 +65,14 @@ class QLearning:
             print("Could not enter the world ", enter_world_req['code'])
             return
         if enter_world_req['code'] != 'OK' and 'currently in world' in enter_world_req['message']:
-            loc_req = self.game_client.where_am_i()
+            loc_req = self.game_client.where_am_i(self.world_id)
             x, y = map(int, loc_req['state'].split(":"))
         else:
             x, y = map(int, enter_world_req['state'].split(":"))
-
+        cnt = 0
         while True:
             try:
+                cnt = cnt + 1
                 direction = self.chose_an_action(x, y)
                 move_req = self.game_client.make_move(self.world_id, direction)
                 if move_req['code'] != 'OK':
@@ -63,19 +82,29 @@ class QLearning:
                 if abs(reward) < 2:
                     reward = 0
                 action = map_direction_to_action(direction)
-                if move_req["newState"] is not None:
+                if move_req["newState"]:
                     new_x, new_y = int(move_req["newState"]["x"]), int(move_req["newState"]["y"])
                     self.history.append((x, y, new_x, new_y, action, reward))
+                    self.is_visited[new_x][new_y] = True
                     # self.update_q_table(x, y, new_x, new_y, action, reward)
                     x, y = new_x, new_y
                     print(new_x, new_y)
-                    time.sleep(1)
+                    save_mines(self.world_id, self.mines)
+                    save_visited_cells(self.world_id, self.is_visited)
+                    time.sleep(0.5)
                 else:
+                    if reward > 0:
+                        self.is_visited[x][y] = True
+                        self.reward_cell = np.array([x, y])
+                    if reward < 0:
+                        self.is_visited[x][y] = True
+                        self.mines[x, y] = True
                     self.q_table[y, x, action] = reward
                     self.update_q_table_with_back_propagation()
-                    print(self.history[-1])
                     self.history.clear()
                     break
             except Exception as e:
                 print("Exception while requesting client ", e)
+                time.sleep(1)
 
+        print("cnt=", cnt)

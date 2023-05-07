@@ -23,9 +23,8 @@ class GameServerClient:
         # data for mocking
         self.is_mocked = is_mocked
         self.mock_state = np.zeros((ROW, COL))
-        self.mock_state[39, 0] = +10000
-        self.mock_state[39, 39] = +10000
-        self.mock_state[12, 12] = -10000
+        self.mock_state[25, 23] = +10000
+        self.mock_state[0, 30] = -10000
         self.current_location = (0, 0)
 
     def make_move(self, world_id, direction):
@@ -33,7 +32,7 @@ class GameServerClient:
             next_action = get_next_action_by_prob(direction)
             new_x = self.current_location[0] + directions[next_action][0]
             new_y = self.current_location[1] + directions[next_action][1]
-            if not is_valid_position(new_x, new_y):
+            if not is_valid_position(new_x, new_y, COL, ROW):
                 new_x = self.current_location[0]
                 new_y = self.current_location[1]
             new_state = {
@@ -86,11 +85,11 @@ class GameServerClient:
         print(response.json())
         return response.json()
 
-    def where_am_i(self):
+    def where_am_i(self, world_id):
         if self.is_mocked:
             resp = {
                 "code": "OK",
-                "world": "0",
+                "world": world_id,
                 "state": str(self.current_location[0]) + ":" + str(self.current_location[1])
             }
             return resp

@@ -1,4 +1,5 @@
 <h1 align="center">Project 3 - Reinforcement Learning</h1>
+<h4 align="center">Team members: Nijad Huseynov, Yusif Mukhtarov, Toghrul Tahirov</h4>
 
 
 ## Table of Contents

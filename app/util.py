@@ -19,8 +19,45 @@ def load_q_table_state(world_id):
         return np.zeros((ROW, COL, 4))
 
 
-def is_valid_position(x, y) -> bool:
-    return 0 <= x < ROW and 0 <= y < COL
+def load_reward_cell(world_id):
+    try:
+        print(np.load(f"states/reward-{world_id}.npy"))
+        return np.load(f"states/reward-{world_id}.npy")
+    except FileNotFoundError as e:
+        print("Could not find the file")
+        return np.array([ROW, COL])
+
+
+def load_visited_cells(world_id):
+    try:
+        return np.load(f"states/visited-{world_id}.npy")
+    except FileNotFoundError as e:
+        print("Could not find the file")
+        return np.full((COL, ROW), False, dtype=bool)
+
+
+def load_mines(world_id):
+    try:
+        return np.load(f"states/mines-{world_id}.npy")
+    except FileNotFoundError as e:
+        print("Could not find the file")
+        return np.full((COL, ROW), False, dtype=bool)
+
+
+def save_mines(world_id, mines):
+    np.save(f"states/mines-{world_id}.npy", mines)
+
+
+def save_visited_cells(world_id, visited):
+    np.save(f"states/visited-{world_id}.npy", visited)
+
+
+def save_reward_cell(world_id, reward_cell):
+    np.save(f"states/reward-{world_id}.npy", reward_cell)
+
+
+def is_valid_position(x, y, x_lim, y_lim) -> bool:
+    return 0 <= x < x_lim and 0 <= y < y_lim
 
 
 def map_action_to_direction(action):
@@ -63,8 +100,8 @@ def map_direction_to_action(direction):
     return 3
 
 
-def get_valid_moves_from(x, y):
-    return [k for k, v in directions.items() if is_valid_position(x + v[0], y + v[1])]
+def get_valid_moves_from(x, y, x_lim, y_lim):
+    return [k for k, v in directions.items() if is_valid_position(x + v[0], y + v[1], x_lim, y_lim)]
 
 
 def visualize_the_world(world_id):
@@ -84,5 +121,13 @@ def visualize_the_world(world_id):
                          ha='center', va='center', color='red')
 
     plt.imshow(zeros, cmap='Greys', interpolation='nearest')
+    plt.gca().invert_yaxis()
+    plt.show()
+
+
+def visualize_visited_cells(world_id):
+    state = load_visited_cells(world_id)
+    plt.imshow(state, cmap='gray')
+    plt.title('Visited cells')
     plt.gca().invert_yaxis()
     plt.show()
